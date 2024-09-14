@@ -1,0 +1,20 @@
+name: SLSA docker releaser
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
+
+permissions: read-all
+
+jobs:
+  # Trusted builder.
+  build:
+    permissions:
+      id-token: write # To sign the provenance.
+      contents: write # To upload assets to release.
+      actions: read # To read the workflow path.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_container-based_slsa3.yml@v2.0.0
+    with:
+      builder-image: "pranaycshah/todolist"
+      builder-digest: "sha256:b6df3b19a3bd5fadacf013e45c93793160043eef6bd44dd81aaa2c2eeef4e95d"
