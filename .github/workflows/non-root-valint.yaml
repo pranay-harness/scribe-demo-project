@@ -4,7 +4,6 @@ name: Valint non-root demo
 
 on: 
   workflow_dispatch:
-  push:
 
 jobs:
   non-root:
