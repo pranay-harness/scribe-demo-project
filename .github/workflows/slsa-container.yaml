@@ -63,3 +63,6 @@ jobs:
     with:
       image: pranaycshah/todolist-demo
       digest: ${{ needs.build.outputs.digest }}
+      registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+    secrets:
+     registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
