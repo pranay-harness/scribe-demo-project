@@ -64,6 +64,5 @@ jobs:
     with:
       image: ${{ needs.build.outputs.image }}
       digest: ${{ needs.build.outputs.digest }}
-      registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
-    secrets:
-      registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
+      registry-username: ${{ github.actor }}
+      registry-password: ${{ secrets.DOCKERHUB_TOKEN }} # Move the secret to the with block
