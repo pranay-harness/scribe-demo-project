@@ -18,3 +18,4 @@ jobs:
     with:
       builder-image: "pranaycshah/todolist"
       builder-digest: "sha256:b6df3b19a3bd5fadacf013e45c93793160043eef6bd44dd81aaa2c2eeef4e95d"
+      config-path: ".github/configs-docker/config.toml"
