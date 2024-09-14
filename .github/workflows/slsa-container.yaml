@@ -6,7 +6,6 @@ on:
 env:
   IMAGE_REGISTRY: docker.io
   IMAGE_NAME: pranaycshah/todolist-demo
-  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
 jobs:
   # This step builds our image, pushes it, and outputs the repo hash digest.
@@ -65,4 +64,4 @@ jobs:
       image: pranaycshah/todolist-demo
       digest: ${{ needs.build.outputs.digest }}
       registry-username: pranaycshah
-      registry-password: ${{ env.registry-password }} # Reference inputs instead of secrets
+      registry-password: ${{ secrets.DOCKERHUB_TOKEN }} # Reference inputs instead of secrets
