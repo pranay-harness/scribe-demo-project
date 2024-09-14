@@ -3,40 +3,51 @@ on:
   workflow_dispatch:
 
 jobs:
-  goreleaser:
+  build:
     runs-on: ubuntu-latest
     outputs:
-      hashes: ${{ steps.hash.outputs.hashes }}
+      digests: ${{ steps.hash.outputs.hashes }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # tag=v3
+      - uses: actions/checkout@v4
 
-      - name: Run GoReleaser
-        id: run-goreleaser
-        uses: goreleaser/goreleaser-action@b953231f81b8dfd023c58e0854a721e35037f28b # tag=v3
-
-      - name: Generate subject
+      # ========================================================
+      #
+      # Step 1: Build your artifacts.
+      #
+      # ========================================================
+      - name: Build artifacts
+        run: |
+            # These are some amazing artifacts.
+            echo "artifact1" > artifact1
+            echo "artifact2" > artifact2
+      # ========================================================
+      #
+      # Step 2: Add a step to generate the provenance subjects
+      #         as shown below. Update the sha256 sum arguments
+      #         to include all binaries that you generate
+      #         provenance for.
+      #
+      # ========================================================
+      - name: Generate subject for provenance
         id: hash
-        env:
-          ARTIFACTS: "${{ steps.run-goreleaser.outputs.artifacts }}"
         run: |
           set -euo pipefail
-
-          hashes=$(echo $ARTIFACTS | jq --raw-output '.[] | {name, "digest": (.extra.Digest // .extra.Checksum)} | select(.digest) | {digest} + {name} | join("  ") | sub("^sha256:";"")' | base64 -w0)
-          if test "$hashes" = ""; then # goreleaser < v1.13.0
-            checksum_file=$(echo "$ARTIFACTS" | jq -r '.[] | select (.type=="Checksum") | .path')
-            hashes=$(cat $checksum_file | base64 -w0)
-          fi
-          echo "hashes=$hashes" >> $GITHUB_OUTPUT
-
+          # List the artifacts the provenance will refer to.
+          files=$(ls artifact*)
+          # Generate the subjects (base64 encoded).
+          hashes=$(sha256sum $files | base64 -w0)
+          echo "hashes=$hashes" >> "${GITHUB_OUTPUT}"
   provenance:
-    needs: [goreleaser]
+    needs: [build]
     permissions:
-      actions: read # To read the workflow path.
+      actions: read   # To read the workflow path.
       id-token: write # To sign the provenance.
       contents: write # To add assets to a release.
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
     with:
-      base64-subjects: "${{ needs.goreleaser.outputs.hashes }}"
-      upload-assets: true # upload to a new release
+      base64-subjects: "${{ needs.build.outputs.digests }}"
+      compile-generator: false # Do not build the provenance generator from source anymore.
+      # Set private-repository to true for private repositories. Note that the repository name is
+      # uploaded as part of the transparency log entry on the public Rekor instance (rekor.sigstore.dev).
+      private-repository: false
